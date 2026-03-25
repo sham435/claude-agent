@@ -36,6 +36,7 @@ export default function Layout() {
   return (
     <div className="app-layout">
       <button
+        type="button"
         className="mobile-toggle"
         onClick={() => setSidebarOpen(!sidebarOpen)}
         aria-label="Toggle sidebar"
@@ -78,9 +79,11 @@ export default function Layout() {
       </main>
 
       {sidebarOpen && (
-        <div
+        <button
+          type="button"
           className="sidebar-overlay"
           onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar"
         />
       )}
     </div>

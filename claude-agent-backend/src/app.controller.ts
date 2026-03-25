@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AppService } from './app.service';
 
 @Controller()
@@ -136,8 +137,9 @@ export class AppController {
 
   // PDF processing endpoints
   @Post('pdf/process')
-  processPDF(@Body() body: { file?: any }) {
-    return this.appService.processPDF(body);
+  @UseInterceptors(FileInterceptor('file'))
+  processPDF(@UploadedFile() file: Express.Multer.File) {
+    return this.appService.processPDF(file);
   }
 
   // PPT generation endpoints
@@ -148,7 +150,7 @@ export class AppController {
 
   // Smart PPT generation from PDF content
   @Post('pdf/generate-smart-ppt')
-  generateSmartPpt(@Body() body: { content: string; title: string; template?: string }) {
+  generateSmartPpt(@Body() body: { content: string; title: string; template?: string; clientId?: string }) {
     return this.appService.generateSmartPpt(body);
   }
 

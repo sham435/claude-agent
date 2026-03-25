@@ -30,6 +30,18 @@ export default function VersionControlPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [backupsRes, logsRes] = await Promise.all([
+          apiClient.getVersions(),
+          apiClient.getVersionLogs(),
+        ]);
+        if (backupsRes.success) setBackups(backupsRes.data);
+        if (logsRes.success) setLogs(logsRes.data);
+      } catch (err) {
+        console.error('Failed to fetch version data:', err);
+      }
+    };
     fetchData();
   }, []);
 

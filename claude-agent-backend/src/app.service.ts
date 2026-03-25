@@ -258,16 +258,32 @@ export class AppService {
     };
   }
 
-  // PDF processing (placeholder - integrate with actual PDF parsing)
-  processPDF(data: { file?: any }) {
-    return {
-      success: true,
-      data: {
-        extractedText: 'Sample extracted text from PDF...',
-        summary: 'This is a sample summary of the PDF content.',
-        pages: 5,
-      },
-    };
+  // PDF processing (using pdf-parse)
+  async processPDF(file: Express.Multer.File) {
+    try {
+      const pdfParse = require('pdf-parse');
+      const dataBuffer = Buffer.from(file.buffer);
+      const data = await pdfParse(dataBuffer);
+      
+      return {
+        success: true,
+        data: {
+          extractedText: data.text || 'No text extracted from PDF',
+          summary: `Extracted ${data.numpages} pages from ${file.originalname}`,
+          pages: data.numpages || 1,
+        },
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        data: {
+          extractedText: 'Sample extracted text from PDF. This is a placeholder for actual OCR content. Edit this text before generating your PowerPoint presentation.',
+          summary: 'PDF processing failed - using placeholder text',
+          pages: 1,
+        },
+        error: err.message,
+      };
+    }
   }
 
   // PPT generation (placeholder - integrate with actual PPT library)

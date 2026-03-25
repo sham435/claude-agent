@@ -265,20 +265,24 @@ export default function PDFPage() {
   };
 
   return (
-    <div className="pdf-page">
-      <div className="page-header">
-        <h1>PDF to PPT Converter</h1>
-        <p className="subtitle">Transform your PDFs into beautiful presentations</p>
+    <div className="pdf-page min-h-screen bg-[#0d0f14] text-white p-6">
+      <div className="page-header mb-8">
+        <h1 className="text-2xl font-semibold">PDF to PPT Converter</h1>
+        <p className="subtitle text-slate-400 mt-1">Transform your PDFs into beautiful presentations</p>
       </div>
 
-      <div className="pdf-layout">
-        <div className="pdf-main">
-          <div
-            className={`upload-zone ${isDragOver ? 'drag-over' : ''} ${file ? 'has-file' : ''}`}
+      <div className="pdf-layout flex gap-6">
+        <div className="pdf-main flex-1">
+          <section
+            aria-label="PDF upload drop zone"
+            className={`upload-zone border-2 border-dashed rounded-xl p-10 text-center transition-all duration-200 ${
+              isDragOver 
+                ? 'border-blue-500 bg-blue-500/5' 
+                : 'border-[#1e2a3a] hover:border-[#3b82f6]'
+            } ${file ? 'has-file' : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={() => !file && fileInputRef.current?.click()}
           >
             <input
               ref={fileInputRef}
@@ -289,12 +293,12 @@ export default function PDFPage() {
               hidden
             />
             {file ? (
-              <div className="file-preview">
-                <div className="file-icon">📄</div>
-                <div className="file-name">{file.name}</div>
+              <div className="file-preview flex items-center gap-3 p-3 bg-[#111827] border border-[#1e2a3a] rounded-lg mt-4">
+                <div className="file-icon text-2xl">📄</div>
+                <div className="file-name text-white flex-1 text-left truncate">{file.name}</div>
                 <button
                   type="button"
-                  className="remove-file"
+                  className="remove-file text-slate-400 hover:text-red-400 text-xl px-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     setFile(null);
@@ -305,27 +309,37 @@ export default function PDFPage() {
                 </button>
               </div>
             ) : (
-              <div className="upload-content">
-                <div className="upload-icon">📁</div>
-                <h3>Drop your PDF here</h3>
-                <p>or click to browse</p>
-              </div>
+              <button
+                type="button"
+                className="upload-content"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="upload-icon text-4xl mb-3">📁</div>
+                <h3 className="text-lg font-medium text-white">Drop your PDF here</h3>
+                <p className="text-slate-500 mt-1">or click to browse</p>
+              </button>
             )}
-          </div>
+          </section>
 
           {(loading || generatingPpt) && (
-            <div className="progress-section">
-              <div className="progress-bar-container">
-                <div className="progress-bar" style={{ width: `${progress}%` }} />
+            <div className="progress-section mt-6">
+              <div className="progress-bar-container w-full bg-[#1e2a3a] rounded-full h-2">
+                <div 
+                  className="progress-bar bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${progress}%` }} 
+                />
               </div>
-              <p className="progress-message">{progressMessage}</p>
+              <p className="progress-message flex justify-between text-sm text-slate-400 mt-1">
+                <span>{progressMessage}</span>
+                <span>{Math.round(progress)}%</span>
+              </p>
             </div>
           )}
 
-          <div className="action-row">
+          <div className="action-row flex gap-3 mt-6">
             <button
               type="button"
-              className="process-btn primary"
+              className="process-btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleProcess}
               disabled={loading || !file}
             >
@@ -335,7 +349,7 @@ export default function PDFPage() {
             {selectedTask?.status === 'completed' && (
               <button
                 type="button"
-                className="process-btn secondary"
+                className="process-btn bg-[#111827] border border-[#1e2a3a] hover:border-[#3b82f6] text-white px-4 py-2.5 rounded-lg transition-colors"
                 onClick={() => setShowAdvanced(!showAdvanced)}
               >
                 {showAdvanced ? 'Hide' : 'Show'} Options
@@ -344,32 +358,40 @@ export default function PDFPage() {
           </div>
 
           {showAdvanced && selectedTask?.status === 'completed' && (
-            <div className="advanced-panel">
-              <div className="template-section">
-                <h4>Template Style</h4>
-                <div className="template-grid">
+            <div className="advanced-panel bg-[#111827] border border-[#1e2a3a] rounded-xl p-6 mt-6">
+              <div className="template-section mb-6">
+                <h4 className="text-slate-300 font-medium mb-3">Template Style</h4>
+                <div className="template-grid grid grid-cols-3 gap-3">
                   {TEMPLATES.map((t) => (
                     <button
                       key={t.id}
                       type="button"
-                      className={`template-card ${selectedTemplate === t.id ? 'active' : ''}`}
+                      className={`template-card p-3 rounded-lg border cursor-pointer text-center transition-all duration-150 ${
+                        selectedTemplate === t.id
+                          ? 'border-2 border-blue-500 bg-blue-500/10 text-blue-400'
+                          : 'border-[#1e2a3a] bg-[#0d1117] text-slate-300 hover:border-blue-400'
+                      }`}
                       onClick={() => setSelectedTemplate(t.id)}
                     >
-                      <span className="template-icon">{t.icon}</span>
-                      <span className="template-name">{t.name}</span>
+                      <span className="template-icon text-2xl block mb-1">{t.icon}</span>
+                      <span className="template-name text-sm">{t.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="style-section">
-                <h4>Slide Style</h4>
-                <div className="style-chips">
+                <h4 className="text-slate-300 font-medium mb-3">Slide Style</h4>
+                <div className="style-chips flex flex-wrap gap-2">
                   {STYLE_CHIPS.map((s) => (
                     <button
                       key={s.id}
                       type="button"
-                      className={`style-chip ${selectedStyle === s.id ? 'active' : ''}`}
+                      className={`style-chip px-4 py-1.5 rounded-full text-sm transition-colors ${
+                        selectedStyle === s.id
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-[#1e2a3a] text-slate-400 hover:bg-[#2e3a4a]'
+                      }`}
                       onClick={() => applyStyle(s.id)}
                     >
                       {s.name}
@@ -381,13 +403,15 @@ export default function PDFPage() {
           )}
 
           {selectedTask?.status === 'completed' && (
-            <div className="text-editor-section">
-              <div className="section-header">
-                <h4>Extracted Text</h4>
-                <span className="char-count">{editText.length} characters</span>
+            <div className="text-editor-section bg-[#111827] border border-[#1e2a3a] rounded-xl p-4 mt-6">
+              <div className="section-header flex justify-between items-center mb-3">
+                <h4 className="text-slate-300 font-medium">Extracted Text</h4>
+                <span className="char-count text-xs bg-[#1e2a3a] text-slate-400 px-2 py-1 rounded-full">
+                  {editText.length} characters
+                </span>
               </div>
               <textarea
-                className="text-editor"
+                className="text-editor w-full min-h-[360px] bg-[#0d1117] text-slate-200 font-mono text-sm p-4 rounded-lg border border-[#1e2a3a] focus:border-blue-500 focus:outline-none resize-y"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 placeholder="Your extracted text will appear here. Edit before generating PPT..."
@@ -396,10 +420,10 @@ export default function PDFPage() {
           )}
 
           {selectedTask?.status === 'completed' && (
-            <div className="generate-section">
+            <div className="generate-section flex gap-3 mt-6">
               <button
                 type="button"
-                className="generate-btn"
+                className="generate-btn bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleGeneratePpt}
                 disabled={generatingPpt || !editText.trim()}
               >
@@ -407,7 +431,7 @@ export default function PDFPage() {
               </button>
               <button
                 type="button"
-                className="save-btn"
+                className="save-btn bg-[#111827] border border-[#1e2a3a] hover:border-[#3b82f6] text-white px-4 py-2.5 rounded-lg transition-colors"
                 onClick={handleSaveToDb}
               >
                 Save to Library
@@ -416,22 +440,32 @@ export default function PDFPage() {
           )}
 
           {tasks.length > 0 && (
-            <div className="recent-section">
-              <h4>Recent Conversions</h4>
-              <div className="recent-list">
+            <div className="recent-section mt-8">
+              <h4 className="text-slate-300 font-medium text-sm uppercase tracking-wider mb-3">Recent Conversions</h4>
+              <div className="recent-list flex flex-col gap-2">
                 {tasks.slice(0, 5).map((task) => (
                   <button
                     key={task.id}
                     type="button"
-                    className={`recent-item ${selectedTask?.id === task.id ? 'active' : ''}`}
+                    className={`recent-item flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                      selectedTask?.id === task.id
+                        ? 'bg-blue-500/10 border-blue-500'
+                        : 'bg-[#111827] border-[#1e2a3a] hover:border-[#2e3a4a]'
+                    }`}
                     onClick={() => openTask(task)}
                   >
-                    <span className="recent-icon">📄</span>
-                    <span className="recent-name">{task.filename}</span>
-                    <span className={`recent-status ${task.status}`}>{task.status}</span>
+                    <span className="recent-icon text-xl">📄</span>
+                    <span className="recent-name text-white flex-1 text-left truncate">{task.filename}</span>
+                    <span className={`recent-status text-xs px-2 py-0.5 rounded ${
+                      task.status === 'completed' ? 'bg-emerald-600/20 text-emerald-400' :
+                      task.status === 'failed' ? 'bg-red-600/20 text-red-400' :
+                      'bg-yellow-600/20 text-yellow-400'
+                    }`}>
+                      {task.status}
+                    </span>
                     <button
                       type="button"
-                      className="recent-delete"
+                      className="recent-delete text-slate-500 hover:text-red-400 px-1"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDelete(task.id);
@@ -446,21 +480,21 @@ export default function PDFPage() {
           )}
         </div>
 
-        <div className="pdf-sidebar">
-          <h3>Conversion History</h3>
+        <div className="pdf-sidebar w-80">
+          <h3 className="text-slate-300 font-medium text-sm uppercase tracking-wider mb-3">Conversion History</h3>
           {history.length > 0 ? (
-            <div className="history-list">
+            <div className="history-list flex flex-col gap-2">
               {history.map((item) => (
                 <button
                   key={item.id}
                   type="button"
-                  className="history-item"
+                  className="history-item flex items-center gap-3 p-3 bg-[#111827] border border-[#1e2a3a] rounded-lg hover:border-[#2e3a4a] transition-colors"
                   onClick={() => loadFromHistory(item)}
                 >
-                  <span className="history-icon">📊</span>
-                  <div className="history-info">
-                    <span className="history-name">{item.filename}</span>
-                    <span className="history-date">
+                  <span className="history-icon text-xl">📊</span>
+                  <div className="history-info flex-1 text-left">
+                    <span className="history-name text-white text-sm block truncate">{item.filename}</span>
+                    <span className="history-date text-slate-500 text-xs">
                       {new Date(item.date).toLocaleDateString()}
                     </span>
                   </div>
@@ -468,7 +502,7 @@ export default function PDFPage() {
                     <a
                       href={item.pptUrl}
                       download
-                      className="history-download"
+                      className="history-download text-blue-400 hover:text-blue-300 px-2"
                       onClick={(e) => e.stopPropagation()}
                     >
                       ↓
@@ -476,7 +510,7 @@ export default function PDFPage() {
                   )}
                   <button
                     type="button"
-                    className="history-delete"
+                    className="history-delete text-slate-500 hover:text-red-400 px-1"
                     onClick={(e) => deleteHistoryItem(item.id, e)}
                   >
                     ×
@@ -485,7 +519,7 @@ export default function PDFPage() {
               ))}
             </div>
           ) : (
-            <p className="no-history">Your conversions will appear here</p>
+            <p className="no-history text-slate-500 text-sm text-center py-8">Your conversions will appear here</p>
           )}
         </div>
       </div>
