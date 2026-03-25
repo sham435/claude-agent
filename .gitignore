@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.claude-agent/
+*.db
+*.log
+.env
+.env.local
+.DS_Store
+.idea/
+.vscode/
