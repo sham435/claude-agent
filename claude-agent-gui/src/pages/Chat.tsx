@@ -11,7 +11,9 @@ import {
   X,
   Copy,
   Check,
-  Loader2
+  Loader2,
+  Pencil,
+  RotateCcw
 } from 'lucide-react';
 import './Chat.css';
 
@@ -48,6 +50,8 @@ export default function Chat() {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [currentModel, setCurrentModel] = useState('...');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [copiedInput, setCopiedInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -104,9 +108,44 @@ export default function Chat() {
     setAttachments(prev => prev.filter(a => a.id !== id));
   };
 
+  const editMessage = (message: Message) => {
+    if (message.role !== 'user') return;
+    setPrompt(message.content);
+    setAttachments(message.attachments || []);
+    setEditingMessageId(message.id);
+    textareaRef.current?.focus();
+  };
+
+  const cancelEdit = () => {
+    setPrompt('');
+    setAttachments([]);
+    setEditingMessageId(null);
+  };
+
+  const copyInputContent = () => {
+    if (!prompt.trim()) return;
+    navigator.clipboard.writeText(prompt);
+    setCopiedInput(true);
+    setTimeout(() => setCopiedInput(false), 2000);
+  };
+
   const handleSend = async () => {
     if (!prompt.trim() && attachments.length === 0) return;
     if (isTyping) return;
+
+    // If editing, update the existing message instead of creating new one
+    if (editingMessageId) {
+      setMessages(prev => prev.map(m => 
+        m.id === editingMessageId 
+          ? { ...m, content: prompt, attachments: [...attachments] }
+          : m
+      ));
+      setPrompt('');
+      setAttachments([]);
+      setEditingMessageId(null);
+      scrollToBottom();
+      return;
+    }
 
     const userMsg: Message = {
       id: crypto.randomUUID(),
@@ -292,13 +331,14 @@ export default function Chat() {
                     ? 'bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3'
                     : 'bg-[#111827] border border-[#1e2a3a] text-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[75%]'
                 }`}>
-                  {message.role === 'assistant' && (
+                  {(message.role === 'assistant' || message.role === 'user') && (
                     <button
                       type="button"
-                      onClick={() => copyMessage(message.content, message.id)}
+                      onClick={() => message.role === 'assistant' ? copyMessage(message.content, message.id) : editMessage(message)}
                       className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-[#1a2744] rounded"
+                      title={message.role === 'assistant' ? 'Copy' : 'Edit'}
                     >
-                      {copiedId === message.id ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} className="text-slate-400" />}
+                      {copiedId === message.id ? <Check size={14} className="text-emerald-400" /> : message.role === 'assistant' ? <Copy size={14} className="text-slate-400" /> : <Pencil size={14} className="text-slate-400" />}
                     </button>
                   )}
                   
@@ -418,16 +458,40 @@ export default function Chat() {
             <ImageIcon size={20} />
           </button>
 
+          {/* Edit mode indicator */}
+          {editingMessageId && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-[#1a2a3a] transition-colors"
+              title="Cancel edit"
+            >
+              <RotateCcw size={18} />
+            </button>
+          )}
+
           <textarea
             ref={textareaRef}
             value={prompt}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+            placeholder={editingMessageId ? "Edit your message..." : "Type a message... (Enter to send, Shift+Enter for new line)"}
             rows={1}
             className="flex-1 bg-transparent text-white placeholder-slate-500 text-sm resize-none focus:outline-none max-h-40 overflow-y-auto"
             style={{ height: 'auto' }}
           />
+
+          {/* Copy input button */}
+          {prompt.trim() && (
+            <button
+              type="button"
+              onClick={copyInputContent}
+              className="text-slate-400 hover:text-blue-400 p-1.5 rounded-lg hover:bg-[#1a2a3a] transition-colors"
+              title="Copy input"
+            >
+              {copiedInput ? <Check size={18} className="text-emerald-400" /> : <Copy size={18} />}
+            </button>
+          )}
 
           <button
             type="button"
@@ -436,8 +500,11 @@ export default function Chat() {
             className={`p-2 rounded-xl transition-all duration-200 ${
               (!prompt.trim() && attachments.length === 0) || isTyping
                 ? 'bg-[#1e2a3a] text-slate-600 cursor-not-allowed'
+                : editingMessageId
+                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
+            title={editingMessageId ? 'Update message' : 'Send message'}
           >
             {isTyping ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
