@@ -304,7 +304,14 @@ export default function Chat() {
                   
                   {message.role === 'assistant' ? (
                     <ReactMarkdown
-                      className="prose prose-invert prose-sm max-w-none prose-code:bg-[#0d1117] prose-code:text-blue-300 prose-code:px-1 prose-code:rounded prose-pre:bg-[#0d1117] prose-pre:border prose-pre:border-[#1e2a3a]"
+                      components={{
+                        code: ({node, className, children, ...props}) => {
+                          return <code className="bg-[#0d1117] text-blue-300 px-1 rounded" {...props}>{children}</code>
+                        },
+                        pre: ({node, children, ...props}) => {
+                          return <pre className="bg-[#0d1117] border border-[#1e2a3a] p-3 rounded overflow-x-auto">{children}</pre>
+                        }
+                      }}
                     >
                       {message.content}
                     </ReactMarkdown>
